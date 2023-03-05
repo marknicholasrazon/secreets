@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width"/>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+
+<nav>
+    <a href="" id="ap" class="inactive">PLAY</a>
+    <a href="" id="ai">INBOX</a>
+</nav>
+
+<div class="grid-3">
+    
+</div>
+
+<script type="text/javascript">
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+    const id = urlParams.get('id');
+    const grid = document.querySelector('.grid-3');
+
+    document.getElementById('ap').href = `success.html?username=${username}`;
+    document.getElementById('ai').href = `inbox.html?username=${username}`;
+
+    const saveInbox = (inbox) => {
+        localStorage.setItem(`${username}-inbox`, JSON.stringify(inbox));
+    };
+
+    const getSavedInbox = () => {
+        const inboxData = localStorage.getItem(`${username}-inbox`);
+        if (inboxData) {
+            return JSON.parse(inboxData);
+        }
+        return null;
+    };
+
+    const displayInbox = (inbox) => {
+        if (inbox.length === 0) {
+            const noMessages = document.createElement('p');
+            noMessages.textContent = 'No messages.';
+            grid.appendChild(noMessages);
+        } else {
+            inbox.reverse().forEach(message => {
+                const links = document.createElement('a');
+                links.href = `view.html?id=${message.id}&username=${username}`;
+                const img = document.createElement('img');
+                img.src = 'message.png';
+                links.appendChild(img);
+                grid.appendChild(links);
+            });
+        }
+    };
+
+    const showSavedInbox = () => {
+        const savedInbox = getSavedInbox();
+        if (savedInbox) {
+            displayInbox(savedInbox);
+        } else {
+            const noMessages = document.createElement('p');
+            noMessages.textContent = 'No messages.';
+            grid.appendChild(noMessages);
+        }
+    };
+
+    const showInbox = (inbox) => {
+        saveInbox(inbox);
+        displayInbox(inbox);
+    };
+
+    fetch(`https://openchat.epizy.com/login?username=${username}`)
+      .then(response => response.json())
+      .then(data => {
+        const user = data.data;
+        const inbox = data.inbox;
+
+        if (user.username != username) {
+          console.log('error parsing your request');
+        } else {
+          console.log(user.username);
+          document.title = "@" + user.username;
+
+          if (navigator.onLine) {
+            showInbox(inbox);
+          } else {
+            showSavedInbox();
+          }
+
+          // Open the inbox with the specified id
+          if (id) {
+            const specificInbox = inbox.find(msg => msg.id === id);
+            if (specificInbox) {
+                window.location.href = `view.html?username=${user.username}&id=${id}`;
+            } else {
+                console.log(`No inbox found with id ${id}`);
+            }
+          }
+
+          // Listen for online and offline events
+          window.addEventListener('online', () => {
+            showInbox(inbox);
+          });
+
+          window.addEventListener('offline', () => {
+            showSavedInbox();
+          });
+        }
+      })
+      .catch(error => console.error(error));
+</script>
+
+</body>
+</html>

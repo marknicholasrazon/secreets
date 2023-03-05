@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width"/>
+   	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+
+<form method="post">
+	<div class="log">
+		<div class="log-div">
+			<img src="logo.svg">
+			<h1>What's your username?</h1>
+			<input type="text" id="username" name="username" autocomplete="off" maxlength="20" placeholder="Ex: johndoe"><br>
+			<button id="done">Done!</button>
+		</div>
+	</div>
+</form>
+
+<script type="text/javascript">
+const input = document.querySelector('#username');
+const button = document.querySelector('#done');
+input.addEventListener('input', (event) => {
+  event.preventDefault();
+  if (/[a-zA-Z]/.test(input.value) && !/\s/.test(input.value)) {
+    button.style.display = "block"; 
+  } else {
+    button.style.display = "none";
+  }
+});
+
+const form = document.querySelector('form');
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const username = document.querySelector('#username').value;
+  fetch(`https://openchat.epizy.com/login?username=${username}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        window.location.href = `success.html?username=${username}`;
+      } else if (data.error && data.error === "existing_account_on_another_device") {
+        alert("Error! We caught you trying to log in to an existing account on another device.");
+      } else {
+        alert("Error! You might be attempting to log into an existing account from a different device or location.");
+      }
+    })
+    .catch(error => console.error(error));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width"/>
+   	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+
+<nav>
+	<a href="" id="ap" class="inactive">PLAY</a>
+	<a href="" id="ai">INBOX</a>
+</nav>
+
+<div class="view-mess">
+	<div class="view-nav">
+		Send me secret messages!
+		<div class="this-mess">
+			hello
+		</div>
+		<div class="this-img">
+			<img id="main-img" src="">
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+const urlParams = new URLSearchParams(window.location.search);
+const username = urlParams.get('username');
+const id = urlParams.get('id');
+
+document.getElementById('ap').href = `success.html?username=${username}`;
+document.getElementById('ai').href = `inbox.html?username=${username}`;
+
+fetch(`https://openchat.epizy.com/login?username=${username}&id=${id}`)
+  .then(response => response.json())
+  .then(data => {
+    if (data.inbox && data.inbox.length > 0) {
+      // Access the first message in the inbox
+      const firstMessage = data.inbox[0];
+      console.log(firstMessage);
+      document.querySelector('.this-mess').innerHTML = firstMessage.message;
+      document.querySelector('#main-img').src = firstMessage.upload;
+    } else {
+      console.log('No messages found');
+    }
+  })
+  .catch(error => console.error(error));
+
+</script>
+
+
+</body>
+</html>
